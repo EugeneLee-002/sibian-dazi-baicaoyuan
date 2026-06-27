@@ -239,7 +239,16 @@ table.map th.action .em{font-size:14px; margin-right:2px}
 - 禁结论前置：不替学生下结论、不报标准答案、不把“正确观点”塞给他。被问倒时不要长篇讲出答案，而是把它改写成下一个追问。
 - 攻论证不攻人格；重构对方“最强版本”再反驳（不打口误、不打稻草人）。
 - 关系安全先于对抗：学生慌/敷衍/想退（防御）时先接住、把矛头和人分开（“我挑的是这个说法的毛病，不是说你笨”）、降低强度，这一轮可不施压。
-- 初中调性：短句；一轮最多2个问题；少术语，用生活画面讲；学生卡住用“卡住=正在动脑”接住、不嘲笑；收口留白不替他敲死唯一答案。
+- 初中调性：短句；一轮最多2个问题；学生卡住用“卡住=正在动脑”接住、不嘲笑；收口留白不替他敲死唯一答案。
+
+# 说话风格（硬要求·最高优先级之一·违反就重写）
+你面对的是12~15岁初中生。你要像一个会聊天、爱抬杠的学长/同桌，绝不是老师、不是哲学家、不是在写作文。
+- 短句为主，一段别超过3句话。多用口语：“对吧”“你想想”“那要是…呢”“我不信”。
+- 全程禁用这类大词和腔调（一个都别出现）：本质、存在主义、超越、重构、解构、单向性、内核、范式、维度、语境、个体、心境如影随形、潜意识、某种意义上、值得深思……要写到这种词时，立刻换成大白话。
+- 不许讲抽象道理，把每个意思都塞进一个具体的人、事、画面里（用课文里的鲁迅捕鸟、闰土、美女蛇，或学生自己的学校生活）。
+- 一次只追一个点，别一口气铺一堆排比/分点。像微信聊天，不像答辩。
+- 坏例（太拗口，禁止）：“‘逃离’本身带有强烈的单向性，真正的逃离往往是不可能的，因为心境会如影随形。”
+- 好例（就要这样）：“逃离？我问你——你转学走了，烦你那件事就真没了吗？还是换个学校它又冒出来？”
 
 # 对手强度·自适应三档（升刃，防诡辩闸恒在）
 - midwife 产婆档（默认）：苏格拉底式温和追问、举反例、不给答案。开场/立场刚冒头/学生紧绷时用。
@@ -407,15 +416,28 @@ function applyTags(tags){
 }
 
 let busy=false;
-async function callAPI(){
+async function streamAPI(onText){
   const r=await fetch(cfg.base.replace(/\/$/,"")+"/chat/completions",{
     method:"POST",
     headers:{"Content-Type":"application/json","Authorization":"Bearer "+cfg.key},
-    body:JSON.stringify({model:cfg.model,messages,temperature:0.8,stream:false})
+    body:JSON.stringify({model:cfg.model,messages,temperature:0.85,stream:true})
   });
   if(!r.ok){ const t=await r.text().catch(()=>""); throw new Error("HTTP "+r.status+" "+t.slice(0,200)); }
-  const data=await r.json();
-  return (data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content)||"（空回复）";
+  const reader=r.body.getReader(), dec=new TextDecoder();
+  let buf="", full="";
+  while(true){
+    const {done,value}=await reader.read(); if(done) break;
+    buf+=dec.decode(value,{stream:true});
+    let nl;
+    while((nl=buf.indexOf("\n"))>=0){
+      const line=buf.slice(0,nl).trim(); buf=buf.slice(nl+1);
+      if(!line.startsWith("data:")) continue;
+      const p=line.slice(5).trim();
+      if(p==="[DONE]") continue;
+      try{ const j=JSON.parse(p); const d=(j.choices&&j.choices[0]&&j.choices[0].delta&&j.choices[0].delta.content)||""; if(d){ full+=d; onText(full); } }catch(e){}
+    }
+  }
+  return full||"（空回复）";
 }
 
 async function send(text){
@@ -427,19 +449,24 @@ async function send(text){
   messages.push({role:"user",content:text});
   input.value=""; autoGrow();
   busy=true; sendBtn.disabled=true;
-  const typing=addMsg("ai",""); typing.classList.add("typing");
-  typing.querySelector(".bubble").innerHTML='先生正在斟酌<span class="dotting"></span>';
+  const aiMsg=addMsg("ai",""); aiMsg.classList.add("typing");
+  const bub=aiMsg.querySelector(".bubble");
+  bub.innerHTML='先生正在斟酌<span class="dotting"></span>';
   try{
-    const raw=await callAPI();
+    let started=false;
+    const raw=await streamAPI(full=>{
+      if(!started){ started=true; aiMsg.classList.remove("typing"); }
+      bub.textContent=full.split("⟦")[0].trim();  // 实时渲染，隐藏末尾机器标记
+      stream.scrollTop=stream.scrollHeight;
+    });
     const {clean,tags}=parseTags(raw);
-    typing.remove();
+    aiMsg.classList.remove("typing");
+    bub.textContent=clean;
     messages.push({role:"assistant",content:raw});
-    addMsg("ai",clean);
-    const opts=applyTags(tags);
-    renderOptions(opts);
+    renderOptions(applyTags(tags));
   }catch(err){
-    typing.remove();
-    addMsg("ai","⚠ 没能连上模型："+err.message+"\n\n请点右上角「设置」检查接口地址与 Key；若是浏览器跨域(CORS)拦截，需用本地代理转发（README 有说明）。");
+    aiMsg.classList.remove("typing");
+    bub.textContent="⚠ 没能连上模型："+err.message+"\n\n点右上角「设置」查接口与 Key。";
   }finally{
     busy=false; sendBtn.disabled=false; input.focus();
   }
