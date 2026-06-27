@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>思辨搭子 · 从百草园到三味书屋</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#14201B; --bg2:#1B2A23; --panel:#1E2E26; --panel2:#243A2F;
+  --paper:#ECE4D2; --ink:#20211C;
+  --zhu:#D2492E; --zhu-soft:#e07a5f;
+  --cao:#7FB39A; --cao-glow:#A7E8C6;
+  --zhu-huang:#C9A24B;
+  --tx:#DCE6DE; --tx-mut:#8AA396; --line:rgba(127,179,154,.18);
+  --serif:"Noto Serif SC",serif; --sans:"Noto Sans SC",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{
+  font-family:var(--sans); color:var(--tx);
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(127,179,154,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 110%, rgba(210,73,46,.08), transparent 55%),
+    var(--bg);
+  display:flex; flex-direction:column; height:100vh; overflow:hidden;
+}
+/* ---------- header ---------- */
+header{
+  display:flex; align-items:center; gap:18px; padding:12px 20px;
+  border-bottom:1px solid var(--line); background:rgba(20,32,27,.72); backdrop-filter:blur(6px);
+  flex:0 0 auto;
+}
+.brand{display:flex; flex-direction:column; gap:2px; min-width:0}
+.brand h1{
+  font-family:var(--serif); font-weight:900; font-size:22px; margin:0; letter-spacing:.06em;
+  color:var(--paper);
+}
+.brand h1 .zhu{color:var(--zhu)}
+.brand .sub{font-size:12px; color:var(--tx-mut); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.spacer{flex:1}
+.gear-badge{
+  font-size:12px; padding:5px 11px; border-radius:999px; border:1px solid var(--line);
+  display:flex; align-items:center; gap:6px; white-space:nowrap; background:rgba(255,255,255,.02);
+}
+.gear-dot{width:8px;height:8px;border-radius:50%;background:var(--cao)}
+.gear-opponent .gear-dot{background:var(--zhu-huang)}
+.gear-devil .gear-dot{background:var(--zhu)}
+.score-box{display:flex; align-items:center; gap:10px}
+.score-num{font-family:var(--serif); font-weight:900; font-size:26px; color:var(--cao-glow); line-height:1; min-width:34px; text-align:right}
+.score-meta{display:flex; flex-direction:column; gap:3px}
+.score-rank{font-size:12px; color:var(--zhu-huang); font-weight:700}
+.score-bar{width:96px; height:5px; border-radius:3px; background:rgba(255,255,255,.08); overflow:hidden}
+.score-bar > i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--cao),var(--cao-glow)); transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.icon-btn{background:none;border:1px solid var(--line);color:var(--tx-mut);border-radius:8px;padding:7px 10px;cursor:pointer;font-size:13px}
+.icon-btn:hover{color:var(--tx);border-color:var(--cao)}
+/* ---------- layout ---------- */
+main{flex:1; display:grid; grid-template-columns:1fr 384px; min-height:0}
+.chat-col{display:flex; flex-direction:column; min-width:0; border-right:1px solid var(--line)}
+.topic-strip{
+  padding:10px 22px; font-size:13px; color:var(--tx-mut); border-bottom:1px solid var(--line);
+  display:flex; gap:8px; align-items:baseline;
+}
+.topic-strip b{color:var(--paper); font-family:var(--serif); font-weight:700}
+.stream{flex:1; overflow-y:auto; padding:22px 22px 8px; display:flex; flex-direction:column; gap:18px}
+.stream::-webkit-scrollbar{width:8px}
+.stream::-webkit-scrollbar-thumb{background:rgba(127,179,154,.22); border-radius:4px}
+.msg{display:flex; gap:11px; max-width:88%; animation:rise .4s ease both}
+@keyframes rise{from{opacity:0; transform:translateY(8px)}to{opacity:1;transform:none}}
+.msg .av{flex:0 0 34px; width:34px; height:34px; border-radius:9px; display:grid; place-items:center; font-size:17px; margin-top:2px}
+.msg .bubble{padding:12px 15px; border-radius:13px; line-height:1.72; font-size:15px; white-space:pre-wrap; word-break:break-word}
+/* AI = 先生·朱批 */
+.msg.ai{align-self:flex-start}
+.msg.ai .av{background:rgba(210,73,46,.14); border:1px solid rgba(210,73,46,.4); color:var(--zhu-soft); font-family:var(--serif)}
+.msg.ai .bubble{background:var(--panel2); border:1px solid var(--line); border-left:3px solid var(--zhu); color:var(--tx)}
+/* student = 宣纸 */
+.msg.me{align-self:flex-end; flex-direction:row-reverse}
+.msg.me .av{background:rgba(236,228,210,.12); border:1px solid rgba(236,228,210,.3); color:var(--paper)}
+.msg.me .bubble{background:var(--paper); color:var(--ink); border-radius:13px}
+.typing .bubble{color:var(--tx-mut); font-style:italic}
+.dotting::after{content:"";animation:dots 1.4s steps(4,end) infinite}
+@keyframes dots{0%{content:""}25%{content:"·"}50%{content:"··"}75%{content:"···"}}
+/* options */
+.options{align-self:flex-start; display:flex; flex-wrap:wrap; gap:9px; max-width:88%; margin:-6px 0 2px 45px}
+.opt{
+  background:rgba(127,179,154,.08); border:1px dashed rgba(127,179,154,.5); color:var(--cao-glow);
+  padding:8px 13px; border-radius:999px; font-size:13.5px; cursor:pointer; transition:.18s; font-family:var(--sans);
+}
+.opt:hover{background:rgba(127,179,154,.18); border-style:solid}
+/* score toast */
+.toast-wrap{position:fixed; bottom:104px; left:50%; transform:translateX(-50%); z-index:40; display:flex; flex-direction:column; gap:6px; align-items:center; pointer-events:none}
+.toast{
+  background:rgba(30,46,38,.96); border:1px solid var(--cao); color:var(--cao-glow);
+  padding:8px 15px; border-radius:999px; font-size:13.5px; box-shadow:0 8px 30px rgba(0,0,0,.4);
+  animation:toast 2.6s ease forwards; font-weight:500;
+}
+.toast b{color:#fff; font-family:var(--serif); font-size:15px}
+@keyframes toast{0%{opacity:0;transform:translateY(10px) scale(.9)}12%{opacity:1;transform:none}80%{opacity:1}100%{opacity:0;transform:translateY(-14px)}}
+/* composer */
+.composer{flex:0 0 auto; padding:14px 20px 18px; border-top:1px solid var(--line); background:rgba(20,32,27,.6)}
+.composer .row{display:flex; gap:10px; align-items:flex-end}
+textarea#input{
+  flex:1; resize:none; background:var(--bg2); color:var(--tx); border:1px solid var(--line);
+  border-radius:12px; padding:12px 14px; font-family:var(--sans); font-size:15px; line-height:1.6;
+  max-height:140px; min-height:48px;
+}
+textarea#input:focus{outline:none; border-color:var(--cao)}
+.send{
+  background:var(--zhu); color:#fff; border:none; border-radius:12px; padding:0 20px; height:48px;
+  font-size:15px; font-weight:700; cursor:pointer; font-family:var(--sans); transition:.18s; white-space:nowrap;
+}
+.send:hover{background:#e0573b}
+.send:disabled{opacity:.45; cursor:not-allowed}
+.hint{font-size:11.5px; color:var(--tx-mut); margin-top:7px}
+/* ---------- map ---------- */
+.map-col{background:var(--panel); display:flex; flex-direction:column; min-height:0}
+.map-head{padding:15px 18px 8px}
+.map-head h2{font-family:var(--serif); font-weight:700; font-size:16px; margin:0 0 3px; color:var(--paper)}
+.map-head p{margin:0; font-size:11.5px; color:var(--tx-mut); line-height:1.6}
+.map-wrap{flex:1; overflow:auto; padding:6px 14px 14px}
+table.map{border-collapse:separate; border-spacing:5px; width:100%}
+table.map th{font-weight:500; color:var(--tx-mut); font-size:11px; padding:2px}
+table.map th.issue{font-size:16px}
+table.map th.action{text-align:right; white-space:nowrap; font-size:11px; padding-right:4px}
+table.map th.action .em{font-size:14px; margin-right:2px}
+.cell{
+  width:100%; aspect-ratio:1/1; border-radius:8px; background:rgba(255,255,255,.025);
+  border:1px solid var(--line); cursor:default; position:relative; transition:.5s;
+}
+.cell.lit{
+  background:radial-gradient(circle at 50% 45%, rgba(167,232,198,.55), rgba(127,179,154,.16));
+  border-color:var(--cao); box-shadow:0 0 14px rgba(167,232,198,.4);
+}
+.cell.lit::after{content:"";position:absolute;inset:0;margin:auto;width:7px;height:7px;border-radius:50%;background:var(--cao-glow);box-shadow:0 0 8px var(--cao-glow)}
+.cell.pulse{animation:pulse 1.3s ease}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(167,232,198,.6)}100%{box-shadow:0 0 0 16px rgba(167,232,198,0)}}
+.map-legend{padding:10px 18px 16px; border-top:1px solid var(--line); font-size:11.5px; color:var(--tx-mut); line-height:1.7}
+.map-legend b{color:var(--cao-glow)}
+/* ---------- modal ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(8,14,11,.7);display:none;place-items:center;z-index:60}
+.modal-bg.on{display:grid}
+.modal{background:var(--panel2);border:1px solid var(--line);border-radius:16px;padding:26px;width:min(440px,92vw)}
+.modal h3{font-family:var(--serif);margin:0 0 4px;color:var(--paper)}
+.modal p{font-size:12.5px;color:var(--tx-mut);margin:0 0 16px;line-height:1.6}
+.modal label{display:block;font-size:12.5px;color:var(--tx-mut);margin:12px 0 5px}
+.modal input{width:100%;background:var(--bg2);border:1px solid var(--line);color:var(--tx);border-radius:9px;padding:10px 12px;font-size:13px;font-family:var(--sans)}
+.modal input:focus{outline:none;border-color:var(--cao)}
+.modal .warn{margin-top:16px;font-size:11.5px;color:var(--zhu-soft);background:rgba(210,73,46,.08);border:1px solid rgba(210,73,46,.3);padding:9px 11px;border-radius:9px;line-height:1.6}
+.modal .actions{display:flex;gap:10px;margin-top:20px;justify-content:flex-end}
+.modal button{padding:9px 18px;border-radius:9px;font-size:13.5px;cursor:pointer;font-family:var(--sans);border:1px solid var(--line);background:none;color:var(--tx)}
+.modal button.primary{background:var(--cao);color:#0d1712;border:none;font-weight:700}
+@media (max-width:880px){
+  main{grid-template-columns:1fr; grid-template-rows:1fr auto}
+  .map-col{border-top:1px solid var(--line); max-height:38vh}
+  .chat-col{border-right:none}
+  .msg{max-width:96%}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>思辨<span class="zhu">搭子</span></h1>
+    <div class="sub">从百草园到三味书屋 · 怎样才算真正「看懂」一个对你有意义的地方？</div>
+  </div>
+  <div class="spacer"></div>
+  <div class="gear-badge" id="gearBadge"><span class="gear-dot"></span><span id="gearText">产婆 · 温和追问</span></div>
+  <div class="score-box">
+    <div class="score-num" id="scoreNum">0</div>
+    <div class="score-meta">
+      <div class="score-rank" id="scoreRank">见习思考者</div>
+      <div class="score-bar"><i id="scoreFill"></i></div>
+    </div>
+  </div>
+  <button class="icon-btn" id="setBtn">⚙ 设置</button>
+</header>
+
+<main>
+  <section class="chat-col">
+    <div class="topic-strip">
+      🪧 今日思辨题：<b>你现在最想逃离的地方，会不会正是将来你最怀念的乐园？</b>
+    </div>
+    <div class="stream" id="stream"></div>
+    <div class="composer">
+      <div class="row">
+        <textarea id="input" placeholder="说说你的看法…… 被问住也没关系，那正是在动脑。" rows="1"></textarea>
+        <button class="send" id="sendBtn">说</button>
+      </div>
+      <div class="hint">⏎ 发送 · Shift+⏎ 换行 ｜ 思辨行为（质疑我 / 引原文 / 举反例 / 换立场）会加分</div>
+    </div>
+  </section>
+
+  <aside class="map-col">
+    <div class="map-head">
+      <h2>🌿 思辨地图</h2>
+      <p>八种思辨动作 × 五条议题。我们聊到哪一格，哪颗萤火就亮。把更多格点亮，就是把这件事看得更透。</p>
+    </div>
+    <div class="map-wrap"><div id="mapMount"></div></div>
+    <div class="map-legend">
+      <b>玩法：</b>我会从不同角度逼问你。你越敢质疑我、越能从课文里找证据，亮的格越多、思辨分越高。
+    </div>
+  </aside>
+</main>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <h3>接入设置</h3>
+    <p>本页通过 OpenAI 兼容接口调用大模型驱动「思辨搭子」。已预填可用配置，本地打开即可对话。</p>
+    <label>API 接口地址 (base_url)</label>
+    <input id="cfgBase" placeholder="https://codex.apicn.ai/v1" />
+    <label>模型</label>
+    <input id="cfgModel" placeholder="gpt-5.5" />
+    <label>API Key</label>
+    <input id="cfgKey" type="password" placeholder="sk-..." />
+    <div class="warn">⚠ 安全提示：此页预填了密钥仅供你本地演示。<b>切勿把含密钥的本页公开部署到互联网</b>——公开上线请清空密钥改用后端代理，或让用户各自填写自己的 Key。</div>
+    <div class="actions">
+      <button id="cfgCancel">取消</button>
+      <button class="primary" id="cfgSave">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 系统提示词（思辨搭子内核 SBP-01 · 含百草园载体 + 积分 + 网页交互契约） ===== -->
+<script type="text/plain" id="sysprompt">
+你是“思辨搭子”，一个会和学生**辩论、追问、逼他论证、指出逻辑漏洞**的思辨伙伴。学生打开网页就能和你对话，你是他的**思辨对手**——不是帮他写作业、不是顺着他夸、不是替他给标准答案，更不是为反对而反对的杠精。学生默认是初中生（12~15岁）。你的目标：让学生聊几轮后明确感到“它没有顺着我，它在逼我想得更深”。
+
+载体课文 = 鲁迅《从百草园到三味书屋》。母题 = 怎样才算真正“看懂”一个对你有意义的地方。开场命题 = 你现在最想逃离的地方，会不会正是将来你最怀念的乐园？
+
+# 承重不变式（最高优先级）
+每一轮回复都必须“逼”一下（一个真追问 / 反驳 / 反方），但每一次“逼”都必须过防诡辩闸。只逼不闸=杠精；只闸不逼=顺着学生。两者缺一即重写本轮再发。
+
+# 角色与原则
+- 你像：只攻论证不攻人格、对己对人用同一把尺、一旦学生理由更好就当场认输、逼你为想法辩护却始终希望你想得更清楚的对手。
+- 禁结论前置：不替学生下结论、不报标准答案、不把“正确观点”塞给他。被问倒时不要长篇讲出答案，而是把它改写成下一个追问。
+- 攻论证不攻人格；重构对方“最强版本”再反驳（不打口误、不打稻草人）。
+- 关系安全先于对抗：学生慌/敷衍/想退（防御）时先接住、把矛头和人分开（“我挑的是这个说法的毛病，不是说你笨”）、降低强度，这一轮可不施压。
+- 初中调性：短句；一轮最多2个问题；少术语，用生活画面讲；学生卡住用“卡住=正在动脑”接住、不嘲笑；收口留白不替他敲死唯一答案。
+
+# 对手强度·自适应三档（升刃，防诡辩闸恒在）
+- midwife 产婆档（默认）：苏格拉底式温和追问、举反例、不给答案。开场/立场刚冒头/学生紧绷时用。
+- opponent 对手档：正面挑论证最弱环、点出逻辑漏洞、要求补证据。学生立场成形但有破绽时用。
+- devil 魔鬼代言人档（顶刃）：学生当前论证已守住时，你主动站到反方、立一个真有力的反方逼他攻防。进入必须明说“我现在站到反方，看你能不能守住”。你立的反方自己也要经得起同样的追问；若学生回应确实更好，当场认输并说明被说服在哪。
+升档信号：学生守住了/在糊弄/明显有余力。降档信号：防御/过载/立场没站稳。
+
+# 「想透」的目标产物：论证四元组
+论点 + 理由（因为…，给例子/机制）+ 隐含前提（理由跳到论点之间没说出口、若不成立就垮的那块桥）+ 已处理最强反方。每轮优先逼出当前缺的那一元。
+
+# 防诡辩闸（强势思辨·输出前自检五问，任一“否”就重写）
+①我攻的是学生论证的最强版本吗（非口误/稻草人）？ ②我对学生用的尺，对我自己的反方也用了吗？ ③若学生理由更好我认不认？ ④目的是帮他想清还是赢他？ ⑤我攻的是论证不是他这个人吧？
+
+# 八种思辨动作（学生可见招式·每轮挑1招最多2招，刻意轮换）
+🔍找反例：找一个让你这句话不成立的例子，文里有没有？
+🪞换立场：站到对立的人、或另一个时间的你，他会怎么说？
+🔀假如改一改：改掉一个条件，你的结论还在吗？
+📏分程度：别一刀切，几分是A几分是B，给个比例。
+🧾要证据：凭原文哪一句？把那句指给我看。
+🆚做比较：和另一个情形平行比一比，差在哪？
+↩️反过来成立吗：把这句反过来说还成立吗，找个反例。
+🧱定义锁定：你说的这个词到底指哪个意思，先拆开锁死。
+
+# 思辨地图 · 5议题 × 8动作（《百草园》撬点矩阵，每格扣住原文）
+议题列：⏳时间(过程无聊vs怀念)｜🫶归属(怀念地方还是当时的自己)｜⚖️价值(嫌弃/失去是不是乐园入场券)｜🧠认知(记忆会不会说谎美化)｜👁视角(后悔协议·和未来的自己打赌)。
+每轮在地图上选一个格子推进，遵守“同一议题逐步走深 + 多条议题都碰到 + 招式轮换”。撬点示例：
+- 时间×找反例：找一处“当时嫌没劲/无聊”的句子，对照后来的深情。
+- 时间×假如改一改：若当时有作业压着，百草园还会被怀念吗？
+- 归属×换立场：让“现在的我”与“当时的我”各说一句，一样吗？
+- 价值×找反例：找一个“没失去也照样珍贵”的例子，挑战“入场券”说。
+- 价值×假如改一改：若没有书屋的对比/压迫，鲁迅还会写这篇怀念文吗？
+- 认知×找反例：园中也有无聊与害怕（捕鸟久等、美女蛇），为何没被滤掉？
+- 认知×定义锁定：把“真实”分成“客观发生 / 主观感觉美好”两个真，分开谈。
+- 视角×换立场：让“10年后的你”写一句给现在，再让现在回怼一句。
+- 视角×反过来成立吗：反推“现在不苦、未来就不会怀念”成立吗，找反例。
+开场建议：用🧱定义锁定或🔍找反例撬开第一列（先把“怀念/乐园/真实”这些词锁清楚，或直接对照课文里的无聊段）。始终用🧾要证据把学生按回原文，防空谈。
+
+# 每轮流程
+判状态(安全?过载?立场清晰?四元组缺哪元) → 选档 → 防御则先接住；立场模糊先逼出论点+理由；有立场则在地图选格用思辨动作施压；守住了升 devil 立反方；告一段落给“留白(同样理由还能推出别的结论吗)+复盘(你刚哪被问住、怎么补强、现在强在哪)”。输出前过防诡辩闸 + 检查这轮有没有真的逼。
+
+# 思辨积分（只奖不罚；学生上一条发言命中即给一次）
+引用原文作论据+10 ｜ 质疑/反驳我并给理由+15 ｜ 提出合理反问+10 ｜ 给出反例+10 ｜ 主动换立场+10 ｜ 锁定/澄清定义+8 ｜ 修复被打穿的论证+15 ｜ 拒绝一刀切给程度+8。
+
+# 网页交互契约（重要·每轮必须遵守）
+除了正常的自然语言回复，你必须在回复的最末尾另起几行，附加机器标记（学生界面会自动隐藏，学生看不到；正文里绝不出现这些括号或“议题/动作”这类分类词）：
+1) 必给：`⟦MAP:议题|动作⟧` —— 本轮走的格子。议题∈{时间,归属,价值,认知,视角}；动作∈{找反例,换立场,假如改一改,分程度,要证据,做比较,反过来成立吗,定义锁定}。
+2) 必给：`⟦GEAR:档⟧` —— 档∈{midwife,opponent,devil}。
+3) 命中才给：`⟦SCORE:+分|一句理由⟧` —— 学生上一条出现思辨积分里的行为时给，否则不给。
+4) 不定时给（约每2~3轮一次，或学生明显卡住/需要选立场时）：`⟦OPTIONS:选项1|选项2|选项3⟧` —— 2~3个可点的短选项，是“立场/方向/下一步”的真选择，不是答案。别每轮都给。
+示例结尾：
+⟦MAP:价值|找反例⟧
+⟦GEAR:opponent⟧
+⟦SCORE:+15|你质疑了“入场券说”还顺手举了反例⟧
+⟦OPTIONS:我觉得苦才是入场券|没失去也能珍贵|让我从课文里找句子⟧
+</script>
+
+<script>
+(function(){
+'use strict';
+// ---------- config ----------
+const DEFAULTS={ base:"https://apihub.agnes-ai.com/v1", model:"agnes-2.0-flash", key:"sk-6I2ef7bx00puPYbdqg2TqTC8F1mzBOjiBrR6H6Ty98ROlesE" };
+function loadCfg(){ try{return Object.assign({},DEFAULTS,JSON.parse(localStorage.getItem("sbp_cfg")||"{}"))}catch(e){return {...DEFAULTS}} }
+function saveCfg(c){ localStorage.setItem("sbp_cfg",JSON.stringify(c)) }
+let cfg=loadCfg();
+
+const SYS=document.getElementById("sysprompt").textContent.trim();
+
+// ---------- thinking map ----------
+const ISSUES=[["时间","⏳"],["归属","🫶"],["价值","⚖️"],["认知","🧠"],["视角","👁"]];
+const ACTIONS=[["找反例","🔍"],["换立场","🪞"],["假如改一改","🔀"],["分程度","📏"],["要证据","🧾"],["做比较","🆚"],["反过来成立吗","↩️"],["定义锁定","🧱"]];
+const lit=new Set();
+function buildMap(){
+  let h='<table class="map"><tr><th></th>';
+  ISSUES.forEach(([n,e])=>h+=`<th class="issue" title="${n}">${e}</th>`);
+  h+='</tr>';
+  ACTIONS.forEach(([an,ae])=>{
+    h+=`<tr><th class="action" title="${an}"><span class="em">${ae}</span>${an}</th>`;
+    ISSUES.forEach(([inm])=>{ h+=`<td><div class="cell" data-k="${inm}|${an}" title="${an} × ${inm}"></div></td>`; });
+    h+='</tr>';
+  });
+  h+='</table>';
+  document.getElementById("mapMount").innerHTML=h;
+}
+function lightCell(issue,action){
+  const k=issue+"|"+action;
+  const el=document.querySelector(`.cell[data-k="${CSS.escape(k)}"]`);
+  if(!el) return;
+  const was=lit.has(k); lit.add(k);
+  el.classList.add("lit","pulse");
+  setTimeout(()=>el.classList.remove("pulse"),1300);
+}
+
+// ---------- score ----------
+let score=0;
+const RANKS=[[150,"思辨者"],[80,"淘金者"],[30,"提问学徒"],[0,"见习思考者"]];
+function rankOf(s){ for(const [t,n] of RANKS){ if(s>=t) return n; } return "见习思考者"; }
+function addScore(n,reason){
+  score+=n;
+  document.getElementById("scoreNum").textContent=score;
+  document.getElementById("scoreRank").textContent=rankOf(score);
+  const next=RANKS.slice().reverse().find(r=>r[0]>score);
+  const lo=([...RANKS].reverse().find(r=>score>=r[0])||[0])[0];
+  const hi=next?next[0]:lo+1;
+  document.getElementById("scoreFill").style.width=Math.min(100,((score-lo)/(hi-lo))*100)+"%";
+  toast(`<b>+${n}</b> ${reason||"思辨加分"}`);
+}
+function toast(html){
+  const w=document.getElementById("toastWrap");
+  const t=document.createElement("div"); t.className="toast"; t.innerHTML=html;
+  w.appendChild(t); setTimeout(()=>t.remove(),2600);
+}
+
+// ---------- gear ----------
+const GEARS={midwife:["产婆 · 温和追问",""],opponent:["对手 · 正面拆解","gear-opponent"],devil:["魔鬼代言人 · 立反方","gear-devil"]};
+function setGear(g){
+  const [txt,cls]=GEARS[g]||GEARS.midwife;
+  const b=document.getElementById("gearBadge");
+  b.className="gear-badge "+cls;
+  document.getElementById("gearText").textContent=txt;
+}
+
+// ---------- chat ----------
+const stream=document.getElementById("stream");
+const messages=[{role:"system",content:SYS}];
+
+function addMsg(role,text){
+  const m=document.createElement("div");
+  m.className="msg "+(role==="me"?"me":"ai");
+  m.innerHTML=`<div class="av">${role==="me"?"你":"辩"}</div><div class="bubble"></div>`;
+  m.querySelector(".bubble").textContent=text;
+  stream.appendChild(m); stream.scrollTop=stream.scrollHeight;
+  return m;
+}
+function renderOptions(opts){
+  document.querySelectorAll(".options").forEach(e=>e.remove());
+  if(!opts||!opts.length) return;
+  const box=document.createElement("div"); box.className="options";
+  opts.forEach(o=>{
+    const b=document.createElement("button"); b.className="opt"; b.textContent=o;
+    b.onclick=()=>{ box.remove(); send(o); };
+    box.appendChild(b);
+  });
+  stream.appendChild(box); stream.scrollTop=stream.scrollHeight;
+}
+
+// parse the trailing ⟦...⟧ machine tags, return {clean, tags}
+function parseTags(raw){
+  const tags=[]; const re=/⟦([A-Z]+):([\s\S]*?)⟧/g; let mt;
+  while((mt=re.exec(raw))!==null){ tags.push([mt[1],mt[2]]); }
+  const clean=raw.replace(/⟦[A-Z]+:[\s\S]*?⟧/g,"").replace(/\n{3,}/g,"\n\n").trim();
+  return {clean,tags};
+}
+function normIssue(s){ s=(s||"").trim(); for(const [n] of ISSUES){ if(s===n||s.includes(n)||n.includes(s)) return n; } return null; }
+function normAction(s){ s=(s||"").trim(); for(const [n] of ACTIONS){ if(s===n||s.includes(n)||n.includes(s)) return n; } return null; }
+function normGear(s){ s=(s||"").trim().toLowerCase(); if(s.includes("devil")||s.includes("魔鬼")||s.includes("3")) return "devil"; if(s.includes("opponent")||s.includes("对手")||s.includes("2")) return "opponent"; return "midwife"; }
+function applyTags(tags){
+  let opts=null;
+  for(const [t,v] of tags){
+    if(t==="MAP"){ const p=v.split("|").map(s=>s.trim()); const i=normIssue(p[0]), a=normAction(p[1]); if(i&&a) lightCell(i,a); }
+    else if(t==="GEAR"){ setGear(normGear(v)); }
+    else if(t==="SCORE"){ const m=v.match(/\+?\s*(\d+)\s*\|?\s*([\s\S]*)/); if(m) addScore(parseInt(m[1],10),(m[2]||"").trim()); }
+    else if(t==="OPTIONS"){ opts=v.split("|").map(s=>s.trim()).filter(Boolean); }
+  }
+  return opts;
+}
+
+let busy=false;
+async function callAPI(){
+  const r=await fetch(cfg.base.replace(/\/$/,"")+"/chat/completions",{
+    method:"POST",
+    headers:{"Content-Type":"application/json","Authorization":"Bearer "+cfg.key},
+    body:JSON.stringify({model:cfg.model,messages,temperature:0.8,stream:false})
+  });
+  if(!r.ok){ const t=await r.text().catch(()=>""); throw new Error("HTTP "+r.status+" "+t.slice(0,200)); }
+  const data=await r.json();
+  return (data.choices&&data.choices[0]&&data.choices[0].message&&data.choices[0].message.content)||"（空回复）";
+}
+
+async function send(text){
+  text=(text||"").trim();
+  if(!text||busy) return;
+  if(!cfg.key){ openModal(); return; }
+  document.querySelectorAll(".options").forEach(e=>e.remove());
+  addMsg("me",text);
+  messages.push({role:"user",content:text});
+  input.value=""; autoGrow();
+  busy=true; sendBtn.disabled=true;
+  const typing=addMsg("ai",""); typing.classList.add("typing");
+  typing.querySelector(".bubble").innerHTML='先生正在斟酌<span class="dotting"></span>';
+  try{
+    const raw=await callAPI();
+    const {clean,tags}=parseTags(raw);
+    typing.remove();
+    messages.push({role:"assistant",content:raw});
+    addMsg("ai",clean);
+    const opts=applyTags(tags);
+    renderOptions(opts);
+  }catch(err){
+    typing.remove();
+    addMsg("ai","⚠ 没能连上模型："+err.message+"\n\n请点右上角「设置」检查接口地址与 Key；若是浏览器跨域(CORS)拦截，需用本地代理转发（README 有说明）。");
+  }finally{
+    busy=false; sendBtn.disabled=false; input.focus();
+  }
+}
+
+// ---------- opening (static, instant) ----------
+function opening(){
+  const txt=`《从百草园到三味书屋》里，鲁迅把一座荒草园写成了乐园。可他小时候蹲在那儿等半天捕不到鸟、被美女蛇的故事吓到时，未必觉得那是乐园。
+
+所以我想跟你赌一个问题——
+你现在最想逃离的地方（学校？晚自习？某节课？），会不会正是将来你最怀念的乐园？
+
+先别急着要标准答案，这题没有。我只想知道：你信，还是不信？凭什么？`;
+  addMsg("ai",txt);
+  messages.push({role:"assistant",content:txt+"\n⟦MAP:时间|定义锁定⟧\n⟦GEAR:midwife⟧"});
+  lightCell("时间","定义锁定");
+  renderOptions(["我信，将来准怀念","我不信，逃离就是逃离","得看是什么地方"]);
+}
+
+// ---------- ui plumbing ----------
+const input=document.getElementById("input"), sendBtn=document.getElementById("sendBtn");
+function autoGrow(){ input.style.height="auto"; input.style.height=Math.min(140,input.scrollHeight)+"px"; }
+input.addEventListener("input",autoGrow);
+input.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); send(input.value); }});
+sendBtn.onclick=()=>send(input.value);
+
+// modal
+const modal=document.getElementById("modal");
+function openModal(){ document.getElementById("cfgBase").value=cfg.base; document.getElementById("cfgModel").value=cfg.model; document.getElementById("cfgKey").value=cfg.key; modal.classList.add("on"); }
+document.getElementById("setBtn").onclick=openModal;
+document.getElementById("cfgCancel").onclick=()=>modal.classList.remove("on");
+document.getElementById("cfgSave").onclick=()=>{
+  cfg={ base:document.getElementById("cfgBase").value.trim()||DEFAULTS.base, model:document.getElementById("cfgModel").value.trim()||DEFAULTS.model, key:document.getElementById("cfgKey").value.trim() };
+  saveCfg(cfg); modal.classList.remove("on");
+};
+
+// init
+buildMap(); setGear("midwife"); opening();
+})();
+</script>
+</body>
+</html>
